@@ -195,13 +195,14 @@ pmem_drain(void)
 	static os_mutex_t lock;
 	os_mutex_lock(&lock);
 	if (cnt == 0) {
-		fd = os_open("/home/dsb/sfence.txt", O_CREAT);
+		fd = os_open("/home/dsb/sfence.txt", O_CREAT|O_RDWR);
 		os_mutex_init(&lock);
 	}
 	cnt++;
 	if ((cnt % 10000) == 0) {
 		char buf[32];
 		int ret  = sprintf(buf, "%ld", cnt);
+		printf("%ld\n", cnt);
 		struct iovec iov;
 		iov.iov_base = buf;
 		iov.iov_len = ret;
