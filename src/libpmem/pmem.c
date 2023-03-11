@@ -180,6 +180,9 @@ pmem_has_hw_drain(void)
 	return 0;
 }
 
+#include <sys/uio.h>
+#include "os.h"
+#include "os_thread.h"
 /*
  * pmem_drain -- wait for any PM stores to drain from HW buffers
  */
@@ -187,7 +190,24 @@ void
 pmem_drain(void)
 {
 	LOG(15, NULL);
-
+	static uint64_t cnt = 0;
+	static int fd = 0;
+	static os_mutex_t lock;
+	os_mutex_lock(&lock);
+	if (cnt == 0) {
+		fd = os_open("/home/dsb/sfence.txt", O_CREAT);
+		os_mutex_init(&lock);
+	}
+	cnt++;
+	if ((cnt % 100) == 0) {
+		char buf[10];
+		int ret  = sprintf(buf, "%ld", cnt);
+		struct iovec iov;
+		iov.iov_base = buf;
+		iov.iov_len = ret;
+		os_writev(fd, &iov, 1);
+	}
+	os_mutex_unlock(&lock);
 	Funcs.fence();
 }
 
