@@ -199,13 +199,14 @@ pmem_drain(void)
 		os_mutex_init(&lock);
 	}
 	cnt++;
-	if ((cnt % 100) == 0) {
-		char buf[10];
+	if ((cnt % 10000) == 0) {
+		char buf[32];
 		int ret  = sprintf(buf, "%ld", cnt);
 		struct iovec iov;
 		iov.iov_base = buf;
 		iov.iov_len = ret;
 		os_writev(fd, &iov, 1);
+		os_fsync(fd);
 	}
 	os_mutex_unlock(&lock);
 	Funcs.fence();
